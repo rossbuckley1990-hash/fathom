@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fathom — Epistemic Sovereignty &amp; Cognitive Debt Engine</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #111620;
+    --panel-alt: #161d2a;
+    --border: #232d3f;
+    --border-hi: #33425c;
+    --text: #e6edf7;
+    --muted: #8b9bb4;
+    --dim: #5c6b84;
+    --accent: #38bdf8;
+    --accent-soft: rgba(56, 189, 248, 0.14);
+    --emerald: #10b981;
+    --emerald-soft: rgba(16, 185, 129, 0.14);
+    --amber: #f59e0b;
+    --amber-soft: rgba(245, 158, 11, 0.15);
+    --crimson: #f43f5e;
+    --crimson-soft: rgba(244, 63, 94, 0.15);
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  header.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(11, 14, 20, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+    display: grid;
+    place-items: center;
+    font-family: var(--mono);
+    font-weight: 800;
+    color: #061018;
+    font-size: 15px;
+    letter-spacing: -0.5px;
+  }
+  .brand-title {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+  .brand-sub {
+    font-size: 11.5px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .workspace-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 680px;
+  }
+  .workspace-bar input {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 11px;
+    border-radius: 6px;
+    outline: none;
+  }
+  .workspace-bar input:focus {
+    border-color: var(--accent);
+  }
+
+  button, .btn {
+    background: var(--panel-alt);
+    color: var(--text);
+    border: 1px solid var(--border-hi);
+    padding: 7px 13px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.14s ease;
+    white-space: nowrap;
+  }
+  button:hover {
+    border-color: var(--accent);
+    background: #1c2536;
+  }
+  button.primary {
+    background: var(--accent);
+    color: #04121d;
+    border-color: var(--accent);
+  }
+  button.primary:hover {
+    background: #7dd3fc;
+  }
+  button.emerald {
+    background: var(--emerald);
+    color: #031710;
+    border-color: var(--emerald);
+  }
+  button.emerald:hover {
+    background: #34d399;
+  }
+  button.sm {
+    padding: 4px 9px;
+    font-size: 11.5px;
+  }
+
+  .status-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pill {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .pill.good { color: var(--emerald); border-color: rgba(16,185,129,0.35); background: var(--emerald-soft); }
+  .pill.warn { color: var(--amber); border-color: rgba(245,158,11,0.35); background: var(--amber-soft); }
+  .pill.bad  { color: var(--crimson); border-color: rgba(244,63,94,0.35); background: var(--crimson-soft); }
+  .pill.info { color: var(--accent); border-color: rgba(56,189,248,0.35); background: var(--accent-soft); }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 24px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  nav.tabs button {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 12px 16px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  nav.tabs button:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.02);
+  }
+  nav.tabs button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 22px 24px 60px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .kpi-label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .kpi-val {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--dim);
+    margin-top: 6px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 1024px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  th {
+    text-align: left;
+    padding: 9px 10px;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(35, 45, 63, 0.65);
+    vertical-align: middle;
+  }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { background: rgba(56, 189, 248, 0.05); }
+
+  .mono { font-family: var(--mono); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin: 2px 4px 2px 0;
+    border: 1px solid var(--border-hi);
+    background: var(--panel-alt);
+    color: var(--muted);
+  }
+  .tag.sink-financial { color: #fda4af; border-color: rgba(244,63,94,0.4); background: rgba(244,63,94,0.1); }
+  .tag.sink-auth_crypto { color: #fcd34d; border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.1); }
+  .tag.sink-persistence { color: #c4b5fd; border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.1); }
+  .tag.sink-external_network { color: #7dd3fc; border-color: rgba(56,189,248,0.4); background: rgba(56,189,248,0.1); }
+  .tag.sink-concurrency { color: #fdba74; border-color: rgba(251,146,60,0.4); background: rgba(251,146,60,0.1); }
+
+  .code-viewer {
+    background: #070a0f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    max-height: 460px;
+    overflow: auto;
+  }
+  .code-line {
+    display: flex;
+    padding: 1px 14px;
+    white-space: pre;
+  }
+  .code-line.sink-hl {
+    background: rgba(244, 63, 94, 0.14);
+    border-left: 3px solid var(--crimson);
+  }
+  .code-line.guard-hl {
+    background: rgba(56, 189, 248, 0.10);
+    border-left: 3px solid var(--accent);
+  }
+  .ln-num {
+    width: 42px;
+    color: var(--dim);
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  select, input[type="text"], textarea {
+    background: var(--panel-alt);
+    border: 1px solid var(--border-hi);
+    color: var(--text);
+    padding: 8px 11px;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 13px;
+    outline: none;
+  }
+  select:focus, input[type="text"]:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .q-block {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .q-dim {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .q-prompt {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .opt-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    background: var(--panel);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .opt-label:hover { border-color: var(--accent); }
+  .opt-label.correct-opt { border-color: var(--emerald); background: var(--emerald-soft); }
+  .opt-label.wrong-opt { border-color: var(--crimson); background: var(--crimson-soft); }
+
+  pre.contract-box {
+    background: #070a0f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 520px;
+    overflow: auto;
+    color: #d6e3f8;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 22px;
+    right: 24px;
+    background: #162235;
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    display: none;
+    z-index: 100;
+  }
+
+  .thesis-banner {
+    background: linear-gradient(90deg, rgba(14,165,233,0.10), rgba(16,185,129,0.08));
+    border: 1px solid rgba(56,189,248,0.28);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">Ft</div>
+    <div>
+      <div class="brand-title">Fathom</div>
+      <div class="brand-sub">Epistemic Sovereignty &amp; Cognitive Debt Engine</div>
+    </div>
+  </div>
+
+  <div class="workspace-bar">
+    <input id="workspacePathInput" type="text" placeholder="/path/to/any/git/repository" title="Local repository path">
+    <button onclick="switchWorkspacePath()">Scan Path</button>
+    <button onclick="refreshState()" title="Re-hash AST &amp; rescan disk">Rescan</button>
+    <button onclick="loadSampleDemo()" title="Materialize &amp; open realistic pulsepay-core hypergrowth repo">Load Demo Repo</button>
+  </div>
+
+  <div class="status-pills">
+    <span id="pillSovereignty" class="pill info">Sovereignty: --</span>
+    <span id="pillGhosts" class="pill bad">Ghosts: --</span>
+    <span id="pillGate" class="pill warn">CI Gate: --</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="overview" onclick="switchTab('overview')">1 · Command Deck &amp; Topography</button>
+  <button data-tab="xray" onclick="switchTab('xray')">2 · Codebase X-Ray &amp; Source</button>
+  <button data-tab="simulator" onclick="switchTab('simulator')">3 · Causal Flight Simulator</button>
+  <button data-tab="preflight" onclick="switchTab('preflight')">4 · AI Pre-Flight Contracts</button>
+  <button data-tab="ledger" onclick="switchTab('ledger')">5 · Sovereignty Ledger &amp; CI Gate</button>
+</nav>
+
+<main>
+  <!-- VIEW 1: OVERVIEW -->
+  <section id="view-overview" class="view active">
+    <div class="thesis-banner">
+      <div>
+        <strong>Why Fathom Exists:</strong> AI tools snapped the 70-year link between <em>how fast code ships</em> and <em>what humans actually understand</em>. Green unit tests do not mean a human holds the causal model when production goes off-script — and AI tool outcomes degrade when human stewards lose grasp of their own invariants.
+      </div>
+      <button class="primary" onclick="jumpToTopGhost()">Anchor Top Ghost Zone →</button>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Sovereignty Index</div>
+        <div id="kpiSovereignty" class="kpi-val">--</div>
+        <div id="kpiSovereigntySub" class="kpi-sub">Consequence-weighted human ownership</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Comprehension Coverage</div>
+        <div id="kpiCoverage" class="kpi-val">--</div>
+        <div id="kpiCoverageSub" class="kpi-sub">Load-bearing paths verified</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Active Ghost Zones</div>
+        <div id="kpiGhosts" class="kpi-val" style="color:var(--crimson)">--</div>
+        <div id="kpiGhostsSub" class="kpi-sub">High-consequence unowned functions</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Stale AST Drift</div>
+        <div id="kpiDrift" class="kpi-val" style="color:var(--amber)">--</div>
+        <div id="kpiDriftSub" class="kpi-sub">Mutated underneath prior human sign-off</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Cognitive Debt</div>
+        <div id="kpiDebt" class="kpi-val">--</div>
+        <div id="kpiDebtSub" class="kpi-sub">Git bursts &amp; bus factor telemetry</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Consequence × Opacity Topography</h2>
+            <div class="card-subtitle">Every callable unit plotted live. Upper-right crimson nodes are load-bearing Ghost Zones. Click any node to inspect or anchor.</div>
+          </div>
+        </div>
+        <div id="quadrantSvgWrap" style="width:100%;overflow:hidden;"></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted);">
+          <span><span style="color:var(--crimson)">●</span> Ghost Zone (Unowned High-Consequence)</span>
+          <span><span style="color:var(--amber)">●</span> Stale AST Drift (Code Mutated After Sign-Off)</span>
+          <span><span style="color:var(--emerald)">●</span> Anchored (Hash-Verified Human Model)</span>
+          <span><span style="color:#64748b">●</span> Low-Consequence Unverified</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Priority Ghost-Zone &amp; Drift Triage Queue</h2>
+            <div class="card-subtitle">Highest Cognitive Debt paths requiring human causal verification or invariant contracts.</div>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Callable Unit</th>
+                <th>State</th>
+                <th>Debt</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="triageTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 2: CODEBASE X-RAY -->
+  <section id="view-xray" class="view">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Callable Unit Matrix</h2>
+            <div class="card-subtitle">Click any function to inspect live disk source, One-Way-Door sinks, call graph, and structural hash.</div>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <input id="xraySearch" type="text" placeholder="Search symbol or file..." oninput="renderXrayTable()" style="flex:1;min-width:160px;">
+          <select id="xrayStateFilter" onchange="renderXrayTable()">
+            <option value="all">All Ownership States</option>
+            <option value="ghost">Ghost Zones Only</option>
+            <option value="stale_drift">Stale AST Drift</option>
+            <option value="anchored">Anchored (Verified)</option>
+          </select>
+          <select id="xraySinkFilter" onchange="renderXrayTable()">
+            <option value="all">All Consequence Sinks</option>
+            <option value="financial">Financial / Ledger</option>
+            <option value="auth_crypto">Auth &amp; Crypto</option>
+            <option value="persistence">State / DB Mutation</option>
+            <option value="external_network">External Network</option>
+            <option value="concurrency">Concurrency &amp; Locks</option>
+            <option value="process_exec">Process / Shell Exec</option>
+          </select>
+        </div>
+        <div style="max-height:580px;overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Conseq</th>
+                <th>Opacity</th>
+                <th>Debt</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody id="xrayTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 id="inspectorTitle" class="card-title">Source &amp; Blast-Radius Inspector</h2>
+            <div id="inspectorMeta" class="card-subtitle">Select a symbol on the left to inspect its causal boundaries.</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="sm primary" onclick="launchChallengeForInspected()">Flight Check</button>
+            <button class="sm" onclick="launchBriefForInspected()">AI Contract</button>
+          </div>
+        </div>
+        <div id="inspectorDetails" style="margin-bottom:12px;"></div>
+        <div id="inspectorCode" class="code-viewer"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 3: CAUSAL FLIGHT SIMULATOR -->
+  <section id="view-simulator" class="view">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Causal Flight Simulator</h2>
+            <div class="card-subtitle">Passive AI summaries create the illusion of understanding. Active counterfactual prediction compiles real causal ownership and mints a Structural-Hash-Bound Receipt.</div>
+          </div>
+        </div>
+
+        <div class="filter-bar" style="align-items:center;">
+          <label style="font-size:12px;color:var(--muted);">Target Symbol:</label>
+          <select id="simUnitSelect" onchange="loadChallenge(this.value)" style="flex:1;"></select>
+        </div>
+
+        <div id="simQuestionsWrap"></div>
+
+        <div class="q-block" style="border-color:var(--border-hi);">
+          <div class="q-dim">Steward Attribution &amp; Reality Invariant Anchor</div>
+          <div style="display:grid;grid-template-columns:200px 1fr;gap:10px;margin-top:8px;">
+            <div>
+              <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Human Steward</label>
+              <input id="simAuthor" type="text" value="ross" style="width:100%;">
+            </div>
+            <div>
+              <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">1-Sentence Human Reality Invariant (auto-injected into future AI Pre-Flight Contracts!)</label>
+              <input id="simInvariant" type="text" placeholder="e.g. Webhook retries arrive out-of-order for 72h; never release idempotency lock on transient network timeout." style="width:100%;">
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <button class="emerald" onclick="submitFlightCheck()">Verify Causal Model &amp; Mint Sovereignty Receipt</button>
+            <span id="simVerdictBanner" class="mono" style="font-size:12.5px;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Live Function Source Reference</h2>
+            <div id="simSourceMeta" class="card-subtitle">Read and trace the real implementation — open-book causal verification builds real mental models.</div>
+          </div>
+        </div>
+        <pre id="simSourceBox" class="contract-box" style="max-height:620px;"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 4: AI PRE-FLIGHT CONTRACT STUDIO -->
+  <section id="view-preflight" class="view">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">AI Pre-Flight Outcome Contract Generator</h2>
+              <div class="card-subtitle">Before prompting Gemini, Claude Code, Cursor, or Codex to modify code, generate a grounded contract exposing every One-Way Door, caller blast radius, and Human Invariant in scope.</div>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:12px;">
+            <div>
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Target File or Callable Unit (or `*` for top critical paths)</label>
+              <input id="briefTarget" type="text" value="*" style="width:100%;" class="mono">
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Intended Change / Outcome</label>
+              <input id="briefIntent" type="text" placeholder="e.g. Add partial proration refunds with exponential webhook retry backoff" style="width:100%;">
+            </div>
+            <div>
+              <button class="primary" onclick="generateBrief()">Synthesize Pre-Flight Outcome Contract</button>
+            </div>
+          </div>
+
+          <div id="briefStructuredSummary" style="margin-top:16px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Record Standalone Human Reality Invariant</h2>
+              <div class="card-subtitle">Attach tacit domain rules to `*` (repo-wide), a file path, or a specific `file::function` in `.fathom/invariants.json`.</div>
+            </div>
+          </div>
+          <div style="display:grid;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr 160px;gap:10px;">
+              <input id="invScope" type="text" placeholder="Scope: * or src/billing.rs::process_stripe_webhook" class="mono">
+              <input id="invAuthor" type="text" value="ross" placeholder="Author">
+            </div>
+            <textarea id="invStatement" rows="2" placeholder="State the invariant an AI optimizer must never violate (e.g. Never auto-refund settled payouts older than 30 days without dual-admin approval)."></textarea>
+            <div>
+              <button onclick="saveStandaloneInvariant()">Save Human Invariant to .fathom/invariants.json</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Copy-Ready AI Prompt Contract (Markdown)</h2>
+            <div class="card-subtitle">Prepend this block to your AI coding agent prompt so unstated invariants stay protected.</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="sm primary" onclick="copyBriefMarkdown()">Copy Contract</button>
+            <button class="sm" onclick="downloadBriefMarkdown()">Download .md</button>
+          </div>
+        </div>
+        <pre id="briefMarkdownBox" class="contract-box"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 5: SOVEREIGNTY LEDGER & CI GATE -->
+  <section id="view-ledger" class="view">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">CI Sovereignty Gate Policy Simulator</h2>
+            <div class="card-subtitle">Block merges when AI velocity outpaces human comprehension on critical One-Way-Door paths (`fathom gate`).</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:14px;">
+          <div>
+            <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Min Sovereignty (0-100)</label>
+            <input id="gateMinSov" type="text" value="65" class="mono" style="width:100%;">
+          </div>
+          <div>
+            <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Max Critical Ghosts</label>
+            <input id="gateMaxCrit" type="text" value="0" class="mono" style="width:100%;">
+          </div>
+          <div>
+            <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Max Stale AST Drift</label>
+            <input id="gateMaxDrift" type="text" value="0" class="mono" style="width:100%;">
+          </div>
+        </div>
+        <button class="primary" onclick="evaluateCustomGate()">Run Live CI Gate Check</button>
+
+        <div id="gateResultPanel" style="margin-top:16px;"></div>
+
+        <div style="margin-top:18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">GitHub Actions Drop-In Step</div>
+          <pre id="ciYamlSnippet" class="contract-box" style="max-height:160px;">- name: Enforce Human Epistemic Sovereignty
+  run: fathom gate --min-sovereignty 65 --max-critical-ghosts 0 --max-stale-drift 0</pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Hash-Chained Sovereignty Ledger (<code>.fathom/ledger.jsonl</code>)</h2>
+            <div id="ledgerChainBadge" class="card-subtitle">Tamper-evident SHA-256 receipt chain bound to normalized AST structural hashes.</div>
+          </div>
+        </div>
+        <div style="max-height:480px;overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Seq</th>
+                <th>Callable Unit</th>
+                <th>Steward</th>
+                <th>AST Hash Match</th>
+                <th>Receipt ID</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+let APP_STATE = null;
+let CURRENT_INSPECTED_ID = null;
+let CURRENT_CHALLENGE = null;
+let SELECTED_ANSWERS = {};
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3200);
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('nav.tabs button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.view').forEach(v => {
+    v.classList.toggle('active', v.id === 'view-' + tabName);
+  });
+}
+
+async function apiGet(url) {
+  const r = await fetch(url);
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+  return data;
+}
+
+async function apiPost(url, payload) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+  return data;
+}
+
+async function refreshState() {
+  try {
+    const state = await apiGet('/api/state');
+    applyState(state);
+  } catch (err) {
+    showToast('Error loading workspace: ' + err.message);
+  }
+}
+
+async function switchWorkspacePath() {
+  const p = document.getElementById('workspacePathInput').value.trim();
+  if (!p) return;
+  try {
+    const state = await apiPost('/api/workspace', { path: p });
+    CURRENT_INSPECTED_ID = null;
+    applyState(state);
+    showToast('Switched active workspace to ' + state.report.root_path);
+  } catch (err) {
+    showToast('Workspace switch failed: ' + err.message);
+  }
+}
+
+async function loadSampleDemo() {
+  try {
+    const state = await apiPost('/api/workspace', { action: 'init_sample' });
+    CURRENT_INSPECTED_ID = null;
+    applyState(state);
+    showToast('Loaded realistic hypergrowth demo repo (pulsepay-core)');
+  } catch (err) {
+    showToast('Demo init failed: ' + err.message);
+  }
+}
+
+function applyState(state) {
+  APP_STATE = state;
+  const rep = state.report;
+  document.getElementById('workspacePathInput').value = rep.root_path;
+
+  // Topbar pills
+  const pSov = document.getElementById('pillSovereignty');
+  pSov.textContent = 'Sovereignty: ' + rep.sovereignty_index + '/100';
+  pSov.className = 'pill ' + (rep.sovereignty_index >= 70 ? 'good' : rep.sovereignty_index >= 40 ? 'warn' : 'bad');
+
+  const pGhosts = document.getElementById('pillGhosts');
+  pGhosts.textContent = 'Ghost Zones: ' + rep.ghost_zone_count;
+  pGhosts.className = 'pill ' + (rep.ghost_zone_count === 0 ? 'good' : 'bad');
+
+  const gate = state.default_gate;
+  const pGate = document.getElementById('pillGate');
+  pGate.textContent = gate.passed ? 'CI Gate: PASS' : 'CI Gate: BLOCKED';
+  pGate.className = 'pill ' + (gate.passed ? 'good' : 'bad');
+
+  // KPIs
+  document.getElementById('kpiSovereignty').textContent = rep.sovereignty_index + '/100';
+  document.getElementById('kpiSovereigntySub').textContent =
+    rep.anchored_count + ' of ' + rep.total_units + ' total units hash-anchored';
+
+  document.getElementById('kpiCoverage').textContent = rep.comprehension_coverage_pct + '%';
+  document.getElementById('kpiCoverageSub').textContent =
+    rep.load_bearing_units + ' load-bearing units (Consequence >= 35)';
+
+  document.getElementById('kpiGhosts').textContent = String(rep.ghost_zone_count);
+  document.getElementById('kpiGhostsSub').textContent =
+    rep.critical_ghost_count + ' critical tier · ' + state.invariants.length + ' invariants recorded';
+
+  document.getElementById('kpiDrift').textContent = String(rep.stale_drift_count);
+  document.getElementById('kpiDriftSub').textContent =
+    rep.stale_drift_count > 0 ? 'AST mutated since human receipt!' : 'Zero stale mental models';
+
+  document.getElementById('kpiDebt').textContent = String(rep.total_cognitive_debt);
+  document.getElementById('kpiDebtSub').textContent =
+    rep.git_summary.burst_commit_count + ' velocity-burst commits · Bus factor: ' + rep.epistemic_bus_factor;
+
+  renderQuadrantSvg(rep.units);
+  renderTriageTable(rep.units);
+  renderXrayTable();
+  populateSimulatorSelect(rep.units);
+  renderLedgerView(state);
+
+  if (!CURRENT_INSPECTED_ID && rep.units.length > 0) {
+    inspectUnit(rep.units[0].unit_id, false);
+  } else if (CURRENT_INSPECTED_ID) {
+    inspectUnit(CURRENT_INSPECTED_ID, false);
+  }
+
+  generateBriefSilent();
+}
+
+function stateBadgeHtml(u) {
+  if (u.ownership_state === 'anchored') {
+    return '<span class="pill good" style="padding:2px 8px;font-size:10.5px;">ANCHORED ✓</span>';
+  }
+  if (u.ownership_state === 'stale_drift') {
+    return '<span class="pill warn" style="padding:2px 8px;font-size:10.5px;">STALE DRIFT ⚠</span>';
+  }
+  if (u.is_ghost_zone) {
+    return '<span class="pill bad" style="padding:2px 8px;font-size:10.5px;">GHOST ZONE</span>';
+  }
+  return '<span class="pill" style="padding:2px 8px;font-size:10.5px;color:var(--muted);">UNVERIFIED</span>';
+}
+
+function renderQuadrantSvg(units) {
+  const W = 620, H = 340, PAD_L = 48, PAD_R = 22, PAD_T = 20, PAD_B = 38;
+  const pw = W - PAD_L - PAD_R;
+  const ph = H - PAD_T - PAD_B;
+
+  const xOf = (op) => PAD_L + (Math.min(100, Math.max(0, op)) / 100) * pw;
+  const yOf = (co) => PAD_T + (1 - Math.min(100, Math.max(0, co)) / 100) * ph;
+
+  const ghostX = xOf(25);
+  const ghostY = yOf(45);
+
+  let circles = '';
+  units.forEach(u => {
+    const cx = xOf(u.opacity_score).toFixed(1);
+    const cy = yOf(u.consequence_score).toFixed(1);
+    const r = Math.min(13, 5.5 + (u.callers.length * 1.8));
+    let fill = '#64748b';
+    if (u.ownership_state === 'anchored') fill = '#10b981';
+    else if (u.ownership_state === 'stale_drift') fill = '#f59e0b';
+    else if (u.is_ghost_zone) fill = '#f43f5e';
+
+    const label = escapeHtml(u.name + ' (' + u.file_path + ') — Conseq ' + u.consequence_score + ', Opacity ' + u.opacity_score + ', Debt ' + u.cognitive_debt);
+    const uid = escapeHtml(u.unit_id);
+    circles += `<g style="cursor:pointer" onclick="onNodeClick('${uid}')">
+      <title>${label}</title>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" fill-opacity="0.82" stroke="#0b0e14" stroke-width="1.5"/>
+    </g>`;
+  });
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;background:#080b11;border:1px solid var(--border);border-radius:8px;">
+    <rect x="${ghostX}" y="${PAD_T}" width="${W - PAD_R - ghostX}" height="${ghostY - PAD_T}" fill="rgba(244,63,94,0.06)"/>
+    <line x1="${ghostX}" y1="${PAD_T}" x2="${ghostX}" y2="${H - PAD_B}" stroke="#263246" stroke-dasharray="4 4"/>
+    <line x1="${PAD_L}" y1="${ghostY}" x2="${W - PAD_R}" y2="${ghostY}" stroke="#263246" stroke-dasharray="4 4"/>
+    <text x="${W - PAD_R - 8}" y="${PAD_T + 16}" text-anchor="end" fill="#f43f5e" font-size="10.5" font-family="monospace">GHOST ZONE QUADRANT</text>
+    <text x="${PAD_L + 8}" y="${H - PAD_B - 8}" fill="#64748b" font-size="10" font-family="monospace">Low Consequence / Routine</text>
+    <line x1="${PAD_L}" y1="${H - PAD_B}" x2="${W - PAD_R}" y2="${H - PAD_B}" stroke="#33425c"/>
+    <line x1="${PAD_L}" y1="${PAD_T}" x2="${PAD_L}" y2="${H - PAD_B}" stroke="#33425c"/>
+    <text x="${PAD_L + pw / 2}" y="${H - 10}" text-anchor="middle" fill="#8b9bb4" font-size="11" font-family="monospace">Opacity &amp; Velocity Pressure (0 → 100)</text>
+    <text x="15" y="${PAD_T + ph / 2}" text-anchor="middle" fill="#8b9bb4" font-size="11" font-family="monospace" transform="rotate(-90 15 ${PAD_T + ph / 2})">Consequence &amp; Blast Radius</text>
+    ${circles}
+  </svg>`;
+
+  document.getElementById('quadrantSvgWrap').innerHTML = svg;
+}
+
+function onNodeClick(unitId) {
+  inspectUnit(unitId, true);
+}
+
+function renderTriageTable(units) {
+  const top = units.filter(u => u.ownership_state !== 'anchored').slice(0, 8);
+  const tbody = document.getElementById('triageTableBody');
+  if (top.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--emerald);text-align:center;padding:22px;">All callable units in this workspace are hash-anchored in verified human causal models!</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = top.map(u => {
+    const seenCats = new Set();
+    const uniqueSinks = u.direct_sinks.filter(s => {
+      if (seenCats.has(s.category)) return false;
+      seenCats.add(s.category);
+      return true;
+    });
+    const sinks = uniqueSinks.slice(0, 2).map(s => `<span class="tag sink-${escapeHtml(s.category)}">${escapeHtml(s.label)}</span>`).join('');
+    const uid = escapeHtml(u.unit_id);
+    return `<tr>
+      <td>
+        <div class="mono" style="font-weight:700;color:var(--text);">${escapeHtml(u.name)}</div>
+        <div class="mono" style="font-size:11px;color:var(--muted);">${escapeHtml(u.file_path)}:L${u.start_line}</div>
+        <div>${sinks}</div>
+      </td>
+      <td>${stateBadgeHtml(u)}</td>
+      <td class="mono" style="font-weight:700;">${u.cognitive_debt}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="sm primary" onclick="openChallengeTab('${uid}')">Flight Check</button>
+          <button class="sm" onclick="inspectUnit('${uid}', true)">X-Ray</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderXrayTable() {
+  if (!APP_STATE) return;
+  const q = document.getElementById('xraySearch').value.trim().toLowerCase();
+  const st = document.getElementById('xrayStateFilter').value;
+  const sk = document.getElementById('xraySinkFilter').value;
+
+  const filtered = APP_STATE.report.units.filter(u => {
+    if (q && !u.unit_id.toLowerCase().includes(q)) return false;
+    if (st === 'ghost' && !u.is_ghost_zone) return false;
+    if (st === 'stale_drift' && u.ownership_state !== 'stale_drift') return false;
+    if (st === 'anchored' && u.ownership_state !== 'anchored') return false;
+    if (sk !== 'all' && !u.transitive_sink_categories.includes(sk)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('xrayTableBody');
+  tbody.innerHTML = filtered.map(u => {
+    const uid = escapeHtml(u.unit_id);
+    const activeStyle = u.unit_id === CURRENT_INSPECTED_ID ? 'background:rgba(56,189,248,0.09);' : '';
+    return `<tr class="clickable" style="${activeStyle}" onclick="inspectUnit('${uid}', false)">
+      <td>
+        <div class="mono" style="font-weight:600;">${escapeHtml(u.name)}</div>
+        <div class="mono" style="font-size:11px;color:var(--muted);">${escapeHtml(u.file_path)}:L${u.start_line}-L${u.end_line}</div>
+      </td>
+      <td class="mono">${u.consequence_score}</td>
+      <td class="mono">${u.opacity_score}</td>
+      <td class="mono" style="font-weight:700;">${u.cognitive_debt}</td>
+      <td>${stateBadgeHtml(u)}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function inspectUnit(unitId, switchView) {
+  CURRENT_INSPECTED_ID = unitId;
+  if (switchView) switchTab('xray');
+  renderXrayTable();
+
+  try {
+    const data = await apiGet('/api/source?unit_id=' + encodeURIComponent(unitId));
+    const u = data.unit;
+    document.getElementById('inspectorTitle').textContent = u.name + ' (' + u.language + ')';
+    document.getElementById('inspectorMeta').textContent =
+      u.file_path + ':L' + u.start_line + '-L' + u.end_line + ' · Structural SHA-256: ' + u.structural_hash;
+
+    const sinkLines = new Set(u.direct_sinks.map(s => s.line));
+    const guardLines = new Set(u.guards.map(g => g.line));
+
+    let driftBanner = '';
+    if (u.ownership_state === 'stale_drift' && u.latest_receipt) {
+      driftBanner = `<div style="background:var(--amber-soft);border:1px solid rgba(245,158,11,0.4);padding:10px 12px;border-radius:6px;margin-bottom:10px;font-size:12px;">
+        <strong style="color:var(--amber);">⚠ STALE AST DRIFT DETECTED:</strong> Steward <code>@${escapeHtml(u.latest_receipt.author)}</code> anchored structural hash <code>${escapeHtml(u.latest_receipt.structural_hash)}</code>, while live disk code now hashes to <code>${escapeHtml(u.structural_hash)}</code>. Re-verify via Flight Check!
+      </div>`;
+    }
+
+    const callersHtml = u.callers.length
+      ? u.callers.map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('')
+      : '<span style="color:var(--dim);font-size:12px;">0 internal callers (entrypoint)</span>';
+    const calleesHtml = u.callees.length
+      ? u.callees.map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('')
+      : '<span style="color:var(--dim);font-size:12px;">0 internal callees (leaf)</span>';
+    const invHtml = u.invariants.length
+      ? u.invariants.map(i => `<div style="font-size:12px;margin-top:4px;color:var(--emerald);">• <strong>[@${escapeHtml(i.author)}]</strong> ${escapeHtml(i.statement)}</div>`).join('')
+      : '<div style="font-size:12px;color:var(--dim);">None recorded yet — anchor via Flight Simulator or AI Pre-Flight Studio.</div>';
+
+    document.getElementById('inspectorDetails').innerHTML = `
+      ${driftBanner}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:var(--panel-alt);padding:10px;border-radius:6px;border:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Upstream Callers (Blast Radius)</div>
+          <div style="margin-top:4px;">${callersHtml}</div>
+        </div>
+        <div style="background:var(--panel-alt);padding:10px;border-radius:6px;border:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Downstream Callees</div>
+          <div style="margin-top:4px;">${calleesHtml}</div>
+        </div>
+      </div>
+      <div style="background:var(--panel-alt);padding:10px;border-radius:6px;border:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;">Protected Human Reality Invariants</div>
+        ${invHtml}
+      </div>
+    `;
+
+    const allLines = data.full_file.split('\n');
+    const slice = allLines.slice(Math.max(0, u.start_line - 1), u.end_line);
+    document.getElementById('inspectorCode').innerHTML = slice.map((ln, idx) => {
+      const no = u.start_line + idx;
+      let cls = 'code-line';
+      if (sinkLines.has(no)) cls += ' sink-hl';
+      else if (guardLines.has(no)) cls += ' guard-hl';
+      return `<div class="${cls}"><span class="ln-num">${no}</span><span>${escapeHtml(ln)}</span></div>`;
+    }).join('');
+  } catch (err) {
+    showToast('Inspect error: ' + err.message);
+  }
+}
+
+function launchChallengeForInspected() {
+  if (!CURRENT_INSPECTED_ID) return;
+  openChallengeTab(CURRENT_INSPECTED_ID);
+}
+
+function launchBriefForInspected() {
+  if (!CURRENT_INSPECTED_ID) return;
+  document.getElementById('briefTarget').value = CURRENT_INSPECTED_ID;
+  switchTab('preflight');
+  generateBrief();
+}
+
+function jumpToTopGhost() {
+  if (!APP_STATE || !APP_STATE.report.units.length) return;
+  const cand = APP_STATE.report.units.find(u => u.ownership_state !== 'anchored') || APP_STATE.report.units[0];
+  openChallengeTab(cand.unit_id);
+}
+
+function populateSimulatorSelect(units) {
+  const sel = document.getElementById('simUnitSelect');
+  const prev = sel.value;
+  sel.innerHTML = units.map(u => {
+    const tag = u.ownership_state === 'anchored' ? '[ANCHORED]' : (u.ownership_state === 'stale_drift' ? '[STALE DRIFT]' : '[DEBT ' + u.cognitive_debt + ']');
+    return `<option value="${escapeHtml(u.unit_id)}">${tag} ${escapeHtml(u.unit_id)}</option>`;
+  }).join('');
+
+  if (prev && units.some(u => u.unit_id === prev)) {
+    sel.value = prev;
+  } else if (units.length > 0) {
+    const firstUnowned = units.find(u => u.ownership_state !== 'anchored') || units[0];
+    sel.value = firstUnowned.unit_id;
+    loadChallenge(firstUnowned.unit_id);
+  }
+}
+
+function openChallengeTab(unitId) {
+  switchTab('simulator');
+  const sel = document.getElementById('simUnitSelect');
+  sel.value = unitId;
+  loadChallenge(unitId);
+}
+
+async function loadChallenge(unitId) {
+  if (!unitId) return;
+  try {
+    const ch = await apiGet('/api/challenge?unit_id=' + encodeURIComponent(unitId));
+    CURRENT_CHALLENGE = ch;
+    SELECTED_ANSWERS = {};
+    document.getElementById('simVerdictBanner').textContent = '';
+    document.getElementById('simSourceMeta').textContent =
+      ch.file_path + ':L' + ch.start_line + '-L' + ch.end_line + ' · Structural Hash: ' + ch.structural_hash;
+    document.getElementById('simSourceBox').textContent = ch.source_excerpt;
+
+    const wrap = document.getElementById('simQuestionsWrap');
+    wrap.innerHTML = ch.questions.map(q => {
+      const opts = q.options.map((opt, oi) => `
+        <label id="opt-${q.index}-${oi}" class="opt-label">
+          <input type="radio" name="sim_q_${q.index}" value="${oi}" onchange="SELECTED_ANSWERS[${q.index}] = ${oi}">
+          <span>${escapeHtml(opt)}</span>
+        </label>
+      `).join('');
+      return `<div class="q-block">
+        <div class="q-dim">Stage ${q.index + 1} · ${escapeHtml(q.dimension)}</div>
+        <div class="q-prompt">${escapeHtml(q.prompt)}</div>
+        ${opts}
+        <div id="q-expl-${q.index}" style="font-size:12px;margin-top:8px;display:none;"></div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    showToast('Challenge load failed: ' + err.message);
+  }
+}
+
+async function submitFlightCheck() {
+  if (!CURRENT_CHALLENGE) return;
+  const total = CURRENT_CHALLENGE.questions.length;
+  const answers = [];
+  for (let i = 0; i < total; i++) {
+    if (SELECTED_ANSWERS[i] === undefined) {
+      showToast('Select an answer for Stage ' + (i + 1) + ' before verifying.');
+      return;
+    }
+    answers.push(SELECTED_ANSWERS[i]);
+  }
+  const author = document.getElementById('simAuthor').value.trim() || 'human-steward';
+  const invariant_note = document.getElementById('simInvariant').value.trim();
+
+  try {
+    const res = await apiPost('/api/challenge/verify', {
+      unit_id: CURRENT_CHALLENGE.unit_id,
+      answers,
+      author,
+      invariant_note
+    });
+    const ev = res.evaluation;
+    ev.verdicts.forEach(v => {
+      document.querySelectorAll(`[id^="opt-${v.index}-"]`).forEach(el => {
+        el.classList.remove('correct-opt', 'wrong-opt');
+      });
+      const selEl = document.getElementById(`opt-${v.index}-${v.selected}`);
+      const corEl = document.getElementById(`opt-${v.index}-${v.correct_index}`);
+      if (corEl) corEl.classList.add('correct-opt');
+      if (!v.is_correct && selEl) selEl.classList.add('wrong-opt');
+
+      const ex = document.getElementById(`q-expl-${v.index}`);
+      ex.style.display = 'block';
+      ex.style.color = v.is_correct ? 'var(--emerald)' : 'var(--amber)';
+      ex.textContent = (v.is_correct ? '✓ Ground-truth match: ' : '✗ Reality delta: ') + v.explanation;
+    });
+
+    const banner = document.getElementById('simVerdictBanner');
+    if (ev.passed && ev.receipt) {
+      banner.style.color = 'var(--emerald)';
+      banner.textContent = '✓ ANCHORED! Receipt ' + ev.receipt.receipt_id + ' chained to .fathom/ledger.jsonl';
+      document.getElementById('simInvariant').value = '';
+      showToast('Sovereignty Receipt ' + ev.receipt.receipt_id + ' minted!');
+    } else {
+      banner.style.color = 'var(--crimson)';
+      banner.textContent = 'Score ' + ev.score_pct + '% — inspect the source trace on the right and re-verify for 100% causal lock.';
+    }
+
+    applyState(res.state);
+  } catch (err) {
+    showToast('Verification failed: ' + err.message);
+  }
+}
+
+async function generateBriefSilent() {
+  const target = document.getElementById('briefTarget').value.trim() || '*';
+  const intent = document.getElementById('briefIntent').value.trim();
+  try {
+    const b = await apiPost('/api/brief', { target, intent });
+    renderBriefResult(b);
+  } catch (_) {}
+}
+
+async function generateBrief() {
+  await generateBriefSilent();
+  showToast('Synthesized Pre-Flight Outcome Contract');
+}
+
+function renderBriefResult(b) {
+  document.getElementById('briefMarkdownBox').textContent = b.markdown;
+  document.getElementById('briefStructuredSummary').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;">
+      <div style="background:var(--panel-alt);padding:10px;border-radius:6px;border:1px solid var(--border);">
+        <div style="color:var(--muted);">Scoped Units</div>
+        <div class="mono" style="font-size:18px;font-weight:700;">${b.scoped_units.length}</div>
+      </div>
+      <div style="background:var(--panel-alt);padding:10px;border-radius:6px;border:1px solid var(--border);">
+        <div style="color:var(--muted);">One-Way Doors</div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--crimson);">${b.one_way_doors.length}</div>
+      </div>
+      <div style="background:var(--panel-alt);padding:10px;border-radius:6px;border:1px solid var(--border);">
+        <div style="color:var(--muted);">Human Invariants</div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--emerald);">${b.protected_invariants.length}</div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveStandaloneInvariant() {
+  const scope = document.getElementById('invScope').value.trim() || '*';
+  const author = document.getElementById('invAuthor').value.trim() || 'human-steward';
+  const statement = document.getElementById('invStatement').value.trim();
+  if (!statement) {
+    showToast('Enter a non-empty Human Reality Invariant statement.');
+    return;
+  }
+  try {
+    const res = await apiPost('/api/invariant', { scope, statement, author });
+    document.getElementById('invStatement').value = '';
+    applyState(res.state);
+    showToast('Saved Human Reality Invariant ' + res.invariant.id);
+  } catch (err) {
+    showToast('Failed to save invariant: ' + err.message);
+  }
+}
+
+function copyBriefMarkdown() {
+  const text = document.getElementById('briefMarkdownBox').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied Pre-Flight Outcome Contract to clipboard!'));
+}
+
+function downloadBriefMarkdown() {
+  const text = document.getElementById('briefMarkdownBox').textContent;
+  const blob = new Blob([text], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'fathom-preflight-contract.md';
+  a.click();
+}
+
+function renderLedgerView(state) {
+  const rep = state.report;
+  const unitHashMap = {};
+  rep.units.forEach(u => { unitHashMap[u.unit_id] = u.structural_hash; });
+
+  const badge = document.getElementById('ledgerChainBadge');
+  if (rep.ledger_status.chain_valid) {
+    badge.innerHTML = `<span style="color:var(--emerald);">✓ SHA-256 Chain Intact (${rep.ledger_status.receipt_count} receipt(s), ${rep.ledger_status.invariant_count} invariant(s))</span>`;
+  } else {
+    badge.innerHTML = `<span style="color:var(--crimson);">✗ CHAIN TAMPERED: ${escapeHtml(rep.ledger_status.chain_error)}</span>`;
+  }
+
+  const tbody = document.getElementById('ledgerTableBody');
+  if (!state.receipts.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px;">No Sovereignty Receipts minted yet in this workspace. Run a Flight Check in Tab 3!</td></tr>`;
+  } else {
+    tbody.innerHTML = state.receipts.map(r => {
+      const curHash = unitHashMap[r.unit_id];
+      let matchBadge = '<span class="tag">DELETED/MOVED</span>';
+      if (curHash === r.structural_hash) {
+        matchBadge = `<span class="pill good" style="padding:2px 7px;font-size:10px;">MATCH (${escapeHtml(r.structural_hash.slice(0, 10))})</span>`;
+      } else if (curHash) {
+        matchBadge = `<span class="pill warn" style="padding:2px 7px;font-size:10px;">DRIFTED (${escapeHtml(r.structural_hash.slice(0, 8))} → ${escapeHtml(curHash.slice(0, 8))})</span>`;
+      }
+      return `<tr>
+        <td class="mono">#${r.seq}</td>
+        <td>
+          <div class="mono" style="font-weight:600;">${escapeHtml(r.unit_id)}</div>
+          ${r.invariant_note ? `<div style="font-size:11.5px;color:var(--emerald);">Invariant: ${escapeHtml(r.invariant_note)}</div>` : ''}
+        </td>
+        <td class="mono">@${escapeHtml(r.author)}</td>
+        <td>${matchBadge}</td>
+        <td class="mono" style="font-size:11px;color:var(--muted);" title="${escapeHtml(r.entry_hash)}">${escapeHtml(r.receipt_id)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  renderGateEvaluation(state.default_gate);
+}
+
+async function evaluateCustomGate() {
+  const min_sovereignty = parseInt(document.getElementById('gateMinSov').value, 10) || 0;
+  const max_critical_ghosts = parseInt(document.getElementById('gateMaxCrit').value, 10) || 0;
+  const max_stale_drift = parseInt(document.getElementById('gateMaxDrift').value, 10) || 0;
+
+  document.getElementById('ciYamlSnippet').textContent =
+    `- name: Enforce Human Epistemic Sovereignty\n  run: fathom gate --min-sovereignty ${min_sovereignty} --max-critical-ghosts ${max_critical_ghosts} --max-stale-drift ${max_stale_drift}`;
+
+  try {
+    const g = await apiPost('/api/gate', { min_sovereignty, max_critical_ghosts, max_stale_drift });
+    renderGateEvaluation(g);
+  } catch (err) {
+    showToast('Gate check failed: ' + err.message);
+  }
+}
+
+function renderGateEvaluation(g) {
+  const el = document.getElementById('gateResultPanel');
+  if (g.passed) {
+    el.innerHTML = `<div style="background:var(--emerald-soft);border:1px solid rgba(16,185,129,0.4);padding:14px;border-radius:8px;">
+      <strong style="color:var(--emerald);">✓ CI SOVEREIGNTY GATE PASSED</strong>
+      <div style="font-size:12.5px;margin-top:4px;color:var(--text);">Human comprehension meets or exceeds all configured thresholds on load-bearing paths.</div>
+    </div>`;
+  } else {
+    const vList = g.violations.map(v => `<li>${escapeHtml(v)}</li>`).join('');
+    const rem = g.remediation_targets.slice(0, 4).map(t => `<code style="display:block;margin-top:3px;">fathom challenge "${escapeHtml(t)}"</code>`).join('');
+    el.innerHTML = `<div style="background:var(--crimson-soft);border:1px solid rgba(244,63,94,0.4);padding:14px;border-radius:8px;">
+      <strong style="color:var(--crimson);">✗ MERGE BLOCKED BY COGNITIVE DEBT GATE</strong>
+      <ul style="margin:8px 0;padding-left:18px;font-size:12.5px;">${vList}</ul>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;">Remediate via Web Simulator or CLI:${rem}</div>
+    </div>`;
+  }
+}
+
+window.addEventListener('DOMContentLoaded', refreshState);
+</script>
+</body>
+</html>

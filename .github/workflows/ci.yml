@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify:
+    name: Rust + Multi-Lang Scanner + Live Web Product E2E (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Setup Node.js for Live Web Product & REST E2E verification
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Strict Clippy lints (#![forbid(unsafe_code)] + zero deps)
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run full offline test suite (AST Drift + Flight Simulator + Live HTTP/JS Product E2E)
+        run: cargo test --offline
+
+      - name: Run 4-act release outcome demonstration
+        run: cargo run --release -- demo

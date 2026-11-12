@@ -1,0 +1,27 @@
+[package]
+name = "fathom"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Epistemic Sovereignty & Cognitive Debt Engine: measure human comprehension coverage across AI-accelerated codebases, eliminate Ghost Zones via AST-grounded Causal Flight Simulators, and generate Pre-Flight Outcome Contracts."
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["cognitive-debt", "comprehension", "static-analysis", "ai-engineering", "invariants"]
+categories = ["development-tools", "command-line-utilities"]
+
+[lib]
+name = "fathom"
+path = "src/lib.rs"
+
+[[bin]]
+name = "fathom"
+path = "src/main.rs"
+
+[dependencies]
+# Zero external runtime or build dependencies.
+# Compiles offline in ~1s with nothing beyond standard stable `rustc`.
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
